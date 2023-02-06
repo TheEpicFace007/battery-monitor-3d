@@ -1,55 +1,165 @@
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <3ds.h>
-#include <iostream>
-#include "utility.h"
-#include "battery.h"
-#include "string"
+// Copyright (C) 2020 Michael Theall
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 #include "3ds/imgui_citro3d.h"
 #include "3ds/imgui_ctru.h"
+#include "battery.h"
+#include "imgui/imgui.h"
+#include <cstdio>
+#include <cstdlib>
+#include <citro3d.h>
+#include <thread>
 
-void init() {
-	gfxInitDefault();
-	ptmuInit();
-	mcuHwcInit();
-	ndspInit();
-}
+#if ANTI_ALIAS
+/// \brief Display transfer scaling
+constexpr auto TRANSFER_SCALING = GX_TRANSFER_SCALE_XY;
+/// \brief Framebuffer scale
+constexpr auto FB_SCALE = 2.0f;
+#else
+/// \brief Display transfer scaling
+constexpr auto TRANSFER_SCALING = GX_TRANSFER_SCALE_NO;
+/// \brief Framebuffer scale
+constexpr auto FB_SCALE = 1.0f;
+#endif
 
-void cleanup() {
-	gfxExit();
-	ptmuExit();
-	mcuHwcExit();
-	ndspExit();
-}
+/// \brief Top screen render target
+C3D_RenderTarget *s_top = nullptr;
+/// \brief Bottom screen render target
+C3D_RenderTarget *s_bottom = nullptr;
 
-int main(int argc, char* argv[]) {
+/// \brief Screen width
+constexpr auto SCREEN_WIDTH = 400.0f;
+/// \brief Screen height
+constexpr auto SCREEN_HEIGHT = 480.0f;
+/// \brief Framebuffer width
+constexpr auto FB_WIDTH = SCREEN_WIDTH * FB_SCALE;
+/// \brief Framebuffer height
+constexpr auto FB_HEIGHT = SCREEN_HEIGHT * FB_SCALE;
+
+/// \brief Display transfer flags
+constexpr auto DISPLAY_TRANSFER_FLAGS =
+	GX_TRANSFER_FLIP_VERT (0) | GX_TRANSFER_OUT_TILED (0) | GX_TRANSFER_RAW_COPY (0) |
+	GX_TRANSFER_IN_FORMAT (GX_TRANSFER_FMT_RGBA8) | GX_TRANSFER_OUT_FORMAT (GX_TRANSFER_FMT_RGB8) |
+	GX_TRANSFER_SCALING (TRANSFER_SCALING);
+
+/// \brief Clear color
+constexpr auto CLEAR_COLOR = 0x808080FF;
+
+bool chargingCoordThreadRunning = true;
+void chargingCoordThread(void *arg) {
 	bool lastPluggedIn = isChargerPluggedIn();
-	init();
-	// Main loop
+	while (chargingCoordThreadRunning) {
+		bool pluggedIn = isChargerPluggedIn();
+		if (pluggedIn != lastPluggedIn) {
+			lastPluggedIn = pluggedIn;
+			if (pluggedIn) {
+				
+			}
+		}
+	}
+}
+
+int main (int argc_, char *argv_[]) {
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+
+	// enable New 3DS speedup
+	osSetSpeedupEnable (true);
+
+	// init services
+	gfxInitDefault();
+	gfxSet3D(false);
+
+	// initialize citro3d
+	C3D_Init (2 * C3D_DEFAULT_CMDBUF_SIZE);
+
+	// create top screen render target
+	s_top = C3D_RenderTargetCreate(FB_HEIGHT * 0.5f, FB_WIDTH, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
+	C3D_RenderTargetSetOutput(s_top, GFX_TOP, GFX_LEFT, DISPLAY_TRANSFER_FLAGS);
+
+	// create bottom screen render target
+	s_bottom = C3D_RenderTargetCreate(FB_HEIGHT * 0.5f, FB_WIDTH * 0.8f, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
+	C3D_RenderTargetSetOutput(s_bottom, GFX_BOTTOM, GFX_LEFT, DISPLAY_TRANSFER_FLAGS);
+
+	if (!imgui::ctru::init())
+		return false;
+
+	imgui::citro3d::init();
+
+	auto &io    = ImGui::GetIO();
+	auto &style = ImGui::GetStyle();
+
+	// disable imgui.ini file
+	io.IniFilename = nullptr;
+
+	// setup display metrics
+	io.DisplaySize = ImVec2(SCREEN_WIDTH, SCREEN_HEIGHT);
+	io.DisplayFramebufferScale = ImVec2(FB_SCALE, FB_SCALE);
+    auto const width = io.DisplaySize.x;
+    auto const height = io.DisplaySize.y;
+
+	//  setup the threads
+	s32 prio;
+	svcGetThreadPriority(&prio, CUR_THREAD_HANDLE);
+	threadCreate(chargingCoordThread, nullptr, 0x1000, prio - 1, -1, true);
+
 	while (aptMainLoop()) {
 
-		// Initialize
-		gspWaitForVBlank();
-		gfxSwapBuffers();
 		hidScanInput();
-		
 
-		// Your code goes here
 		u32 kDown = hidKeysDown();
 		if (kDown & KEY_START)
-			break; // break in order to return to hbmenu
-		// Check if the charger state changed
-		if (lastPluggedIn != isChargerPluggedIn()) {
-			lastPluggedIn = isChargerPluggedIn();
-		}
-		std::cout << "Battery: " << (int)getBatteryPercentage() << "%" << std::endl;
-		std::cout << "Plugged in: " << (isChargerPluggedIn() ? "Yes" : "No") << std::endl;
-		if (checkCharingState() == ChargingState::Charging || checkCharingState() == ChargingState::FullyCharged) {
-			std::cout << "Finished charging: " << (checkCharingState() == ChargingState::FullyCharged ? "Yes" : "No") << std::endl;
-		}
-		sleep(1000);
+			return false;
+
+		imgui::ctru::newFrame();
+		ImGui::NewFrame();
+
+		// top screen
+		ImGui::SetNextWindowSize(ImVec2(width, height * 0.5f));
+		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+
+		// bottom screen
+		ImGui::SetNextWindowSize(ImVec2(width * 0.8f, height * 0.5f));
+		ImGui::SetNextWindowPos(ImVec2(width * 0.1f, height * 0.5f), ImGuiCond_FirstUseEver);
+
+		// render frame
+		ImGui::Render();
+		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+
+		// clear frame/depth buffers
+		C3D_RenderTargetClear(s_top, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
+		C3D_RenderTargetClear(s_bottom, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
+
+		imgui::citro3d::render(s_top, s_bottom);
+
+		C3D_FrameEnd(0);
 	}
-	cleanup();
-	return 0;
+
+	// clean up resources
+	imgui::citro3d::exit();
+
+	// free render targets
+	C3D_RenderTargetDelete(s_bottom);
+	C3D_RenderTargetDelete(s_top);
+
+	// deinitialize
+	C3D_Fini();
+	gfxExit();
+	acExit();
+	chargingCoordThreadRunning = false;
+
+	ImGui::DestroyContext();
 }
