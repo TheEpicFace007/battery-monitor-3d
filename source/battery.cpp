@@ -1,4 +1,5 @@
 #include "battery.h"
+#include <iostream>
 
 u8 getBatteryPercentage() {
     u8 level;
@@ -6,12 +7,12 @@ u8 getBatteryPercentage() {
     return level;
 }
 
-bool isPluggedin() {
-    u8 chargeState;
-    PTMU_GetBatteryLevel(&chargeState);
-    return chargeState == 1;
+bool isChargerPluggedIn() {
+    bool chargeState;
+    PTMU_GetAdapterState(&chargeState);
+    return chargeState;
 }
 
 bool didFinishedCharging() {
-    return isPluggedin() && getBatteryPercentage() == 100;
+    return isChargerPluggedIn() && getBatteryPercentage() == 100;
 }
