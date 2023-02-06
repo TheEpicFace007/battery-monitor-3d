@@ -13,6 +13,14 @@ bool isChargerPluggedIn() {
     return chargeState;
 }
 
-bool didFinishedCharging() {
-    return isChargerPluggedIn() && getBatteryPercentage() == 100;
+ChargingState checkCharingState() {
+    if (isChargerPluggedIn()) {
+        if (getBatteryPercentage() == 100) {
+            return ChargingState::FullyCharged;
+        } else {
+            return ChargingState::Charging;
+        }
+    } else {
+        return ChargingState::NotCharging;
+    }
 }
