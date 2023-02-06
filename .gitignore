@@ -4,3 +4,4 @@ build/
 *.3dsx
 *.smdh
 *.cia
+.DS_Store
