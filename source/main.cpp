@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 	gfxInitDefault();
 	consoleInit(GFX_TOP, NULL);
 
-	printf("Hello, world!\n");
+	printf("Hello, 3DS world!");
 
 	// Main loop
 	while (aptMainLoop())
