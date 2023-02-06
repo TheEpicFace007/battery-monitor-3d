@@ -21,7 +21,6 @@
 #include <cstdlib>
 #include <citro3d.h>
 #include <thread>
-#include "m3dia.hpp"
 
 #if ANTI_ALIAS
 /// \brief Display transfer scaling
@@ -66,7 +65,6 @@ void chargingCoordThread(void *arg) {
 		if (pluggedIn != lastPluggedIn) {
 			lastPluggedIn = pluggedIn;
 			if (pluggedIn) {
-				
 			}
 		}
 	}
