@@ -6,18 +6,14 @@
 #include "utility.h"
 #include "battery.h"
 #include "string"
-
-void playsound(std::string path);
+#include "3ds/imgui_citro3d.h"
+#include "3ds/imgui_ctru.h"
 
 void init() {
 	gfxInitDefault();
-	consoleInit(GFX_TOP, NULL);
-	Result ptmuInitRes = ptmuInit();
-	printf("ptmu initialization %s\n", R_FAILED(ptmuInitRes) == 0 ? "succeeded" : "failed");
-	Result mcuhwcInitRes = mcuHwcInit();
-	printf("mcuHwc initialization %s\n", R_FAILED(mcuhwcInitRes) == 0 ? "succeeded" : "failed");
-	Result ndspInitRes = ndspInit();
-	std::cout << "ndsp initialization " << (R_FAILED(ndspInitRes) == 0 ? "succeeded" : "failed") << std::endl;
+	ptmuInit();
+	mcuHwcInit();
+	ndspInit();
 }
 
 void cleanup() {
@@ -46,9 +42,6 @@ int main(int argc, char* argv[]) {
 		// Check if the charger state changed
 		if (lastPluggedIn != isChargerPluggedIn()) {
 			lastPluggedIn = isChargerPluggedIn();
-			if (isChargerPluggedIn()) {	
-				playsound("romfs:/charging.opus");
-			}
 		}
 		std::cout << "Battery: " << (int)getBatteryPercentage() << "%" << std::endl;
 		std::cout << "Plugged in: " << (isChargerPluggedIn() ? "Yes" : "No") << std::endl;
@@ -59,11 +52,4 @@ int main(int argc, char* argv[]) {
 	}
 	cleanup();
 	return 0;
-}
-
-/**
- * Plays a sound file using libopus
-*/
-void playsound(std::string path) {
-
 }
