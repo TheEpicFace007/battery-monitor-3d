@@ -24,3 +24,16 @@ ChargingState checkCharingState() {
         return ChargingState::NotCharging;
     }
 }
+
+std::string chargingStateToString(ChargingState state) {
+    switch (state) {
+        case ChargingState::Charging:
+            return "Charging";
+        case ChargingState::NotCharging:
+            return "Not Charging";
+        case ChargingState::FullyCharged:
+            return "Fully Charged";
+        default:
+            return "Unknown";
+    }
+}
