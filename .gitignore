@@ -5,3 +5,5 @@ build/
 *.smdh
 *.cia
 .DS_Store
+battery-monitor-3d.elf
+battery-monitor-3d.3dsx
