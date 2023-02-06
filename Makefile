@@ -38,6 +38,8 @@ DATA		:=	data
 INCLUDES	:=	include
 GRAPHICS	:=	gfx
 GFXBUILD	:=	$(BUILD)
+APP_TITLE   :=  Battery Monitor 3D
+APP_AUTHOR  :=  TheEpicFace007
 #ROMFS		:=	romfs
 #GFXBUILD	:=	$(ROMFS)/gfx
 
