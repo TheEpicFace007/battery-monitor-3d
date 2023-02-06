@@ -27,8 +27,8 @@ void cleanup() {
 	ndspExit();
 }
 
-bool lastPluggedIn = isChargerPluggedIn();
 int main(int argc, char* argv[]) {
+	bool lastPluggedIn = isChargerPluggedIn();
 	init();
 	// Main loop
 	while (aptMainLoop()) {
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
 		if (lastPluggedIn != isChargerPluggedIn()) {
 			lastPluggedIn = isChargerPluggedIn();
 			if (isChargerPluggedIn()) {	
-				playsound("romfs:/charing.opus");
+				playsound("romfs:/charging.opus");
 			}
 		}
 		std::cout << "Battery: " << (int)getBatteryPercentage() << "%" << std::endl;
@@ -61,18 +61,9 @@ int main(int argc, char* argv[]) {
 	return 0;
 }
 
+/**
+ * Plays a sound file using libopus
+*/
 void playsound(std::string path) {
-	ndspSetOutputMode(NDSP_OUTPUT_STEREO);
-	ndspChnReset(0);
-	ndspChnSetInterp(0, NDSP_INTERP_LINEAR);
-	ndspChnSetRate(0, 44100.0f);
-	ndspChnSetFormat(0, NDSP_FORMAT_STEREO_PCM16);
-	FILE* file = fopen(path.c_str(), "rb");
-	fseek(file, 0, SEEK_END);
-	u32 size = ftell(file);
-	fseek(file, 0, SEEK_SET);
-	u8* buffer = (u8*)malloc(size);
-	fread(buffer, 1, size, file);
-	fclose(file);
-	ndspChnWaveBufAdd(0, (ndspWaveBuf*)buffer);
+
 }
