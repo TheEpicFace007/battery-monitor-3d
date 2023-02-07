@@ -29,7 +29,9 @@ void sceneRender() {
 	
 	C2D_TextParse(&batteryPercentageText, dynamicBuf, batPercentage);
 	C2D_TextOptimize(&batteryPercentageText);
-	C2D_DrawText(&batteryPercentageText, C2D_AlignCenter, 0, 0, 0, 0.5f, 0.5f, 0.5f);
+	C2D_DrawText(&batteryPercentageText, C2D_AlignCenter, 200.0, 200, 0, 1, 1, 0.5f);
+	ChargingState state = checkChagringState();
+	
 }
 
 void sceneExit() {
@@ -47,7 +49,7 @@ int main(int argc, char **argv) {
 	C2D_Prepare();
 	// Create screens
 	C3D_RenderTarget* top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
-
+	C3D_RenderTarget* bottom = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
 	// Initialize the scene
 	sceneInit();
 
@@ -61,7 +63,7 @@ int main(int argc, char **argv) {
 
 
 		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-		C2D_TargetClear(top, C2D_Color32(0x00, 0x00, 0x00, 0xFF));
+		C2D_TargetClear(top, C2D_Color32(0xEE, 0xEE, 0xEE, 0xFF));
 		C2D_SceneBegin(top);
 		sceneRender();
 		C3D_FrameEnd(0);
