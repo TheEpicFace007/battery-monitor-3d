@@ -12,4 +12,4 @@ enum class ChargingState {
 std::string chargingStateToString(ChargingState state);
 u8 getBatteryPercentage();
 bool isChargerPluggedIn();
-ChargingState checkCharingState();
+ChargingState checkChagringState();

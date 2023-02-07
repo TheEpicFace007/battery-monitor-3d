@@ -52,14 +52,14 @@ CFLAGS	:=	-g -Wall -O2 -mword-relocations \
 			-ffunction-sections \
 			$(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -D__3DS__
+CFLAGS	+=	$(INCLUDE) -D__3DS__ -fpermissive
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:= -lcitro3d -lctru -lm
+LIBS	:=  `$(PREFIX)pkg-config --libs sdl SDL_mixer` -lcitro3d -lctru -lm 
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
