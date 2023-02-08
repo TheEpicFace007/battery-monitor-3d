@@ -23,6 +23,7 @@ void statusPrinintLoopTh(void*) {
 C2D_TextBuf staticBuf, dynamicBuf;
 C2D_Text batteryPercentageText, batteryLevelText;
 
+
 void sceneInit() {
 	staticBuf = C2D_TextBufNew(4096);
 	dynamicBuf = C2D_TextBufNew(4096);
@@ -35,15 +36,15 @@ void sceneRender() {
 	C2D_TextBufClear(dynamicBuf);
 
 	// Display battery percentage
-	char batPercentage[10];
-	snprintf(batPercentage, 10, "%d%%", getBatteryPercentage());
+	char batPercentage[100];
+	snprintf(batPercentage, 100, "%d%% (%s)", getBatteryPercentage(), chargingStateToString(checkChagringState()).c_str());
 	
 	C2D_TextParse(&batteryPercentageText, dynamicBuf, batPercentage);
 	C2D_TextOptimize(&batteryPercentageText);
-	C2D_DrawText(&batteryPercentageText, C2D_AlignCenter, 200.0, (240 / 2) + 10, 0, 0.8, 0.8, 0.5f);
-	ChargingState state = checkChagringState();
+	C2D_DrawText(&batteryPercentageText, C2D_AlignCenter, 200.0, (240 / 2) + 5, 0, 0.8, 0.8, 0.5f);
 	// Display "Battery level:" over the battery percentage
 	C2D_DrawText(&batteryLevelText, C2D_AlignCenter, 200.0, (240 / 2) - 30, 0, 1, 1, 0.5f);
+
 }
 
 void sceneExit() {
@@ -59,6 +60,7 @@ int main(int argc, char **argv) {
 	C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
 	C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
 	C2D_Prepare();
+	newsInit();
 	// Create screens
 	C3D_RenderTarget* top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
 	C3D_RenderTarget* bottom = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
@@ -100,6 +102,7 @@ int main(int argc, char **argv) {
 	C3D_Fini();
 	ptmuExit();
 	mcuHwcExit();
+	newsExit();
 	gfxExit();
 	return 0;
 }
