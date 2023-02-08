@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 		// Render the scene
 		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
 		u32 colorToRender = C_NeonGreen;
-		if (getBatteryPercentage() < 100 && getBatteryPercentage() >= 80) {
+		if (getBatteryPercentage() < 90 && getBatteryPercentage() >= 80) {
 			colorToRender = C_Green;
 		} else if (getBatteryPercentage() < 80 && getBatteryPercentage() >= 50) {
 			colorToRender = C_LightGreen;
