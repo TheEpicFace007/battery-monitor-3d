@@ -40,7 +40,7 @@ void sceneRender() {
 	
 	C2D_TextParse(&batteryPercentageText, dynamicBuf, batPercentage);
 	C2D_TextOptimize(&batteryPercentageText);
-	C2D_DrawText(&batteryPercentageText, C2D_AlignCenter, 200.0, (240 / 2)-5, 0, 0.8, 0.8, 0.5f);
+	C2D_DrawText(&batteryPercentageText, C2D_AlignCenter, 200.0, (240 / 2) + 10, 0, 0.8, 0.8, 0.5f);
 	ChargingState state = checkChagringState();
 	// Display "Battery level:" over the battery percentage
 	C2D_DrawText(&batteryLevelText, C2D_AlignCenter, 200.0, (240 / 2) - 30, 0, 1, 1, 0.5f);
