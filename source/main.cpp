@@ -24,7 +24,7 @@ C2D_TextBuf staticBuf, dynamicBuf;
 C2D_Text batteryPercentageText, batteryLevelText;
 C2D_SpriteSheet spritesheet;
 C2D_Sprite batterySprite;
-
+constexpr float batterySpriteSize = 0.73;
 
 void sceneInit() {
 	staticBuf = C2D_TextBufNew(4096);
@@ -35,8 +35,7 @@ void sceneInit() {
 	// Display the sprites
 	C2D_SpriteFromSheet(&batterySprite, spritesheet, 1);
 	C2D_SpriteSetCenter(&batterySprite, 0.5, 0.5);
-	C2D_SpriteSetScale(&batterySprite, 0.7, 0.7);
-	C2D_SpriteSetPos(&batterySprite, 0.5, 0.5);
+	C2D_SpriteSetScale(&batterySprite, 0.5, 0.5);
 }
 
 void sceneRender() {
@@ -48,9 +47,29 @@ void sceneRender() {
 	
 	C2D_TextParse(&batteryPercentageText, dynamicBuf, batPercentage);
 	C2D_TextOptimize(&batteryPercentageText);
-	C2D_DrawText(&batteryPercentageText, C2D_AlignCenter, 200.0, 0, 0, 0.8, 0.8, 0.5f);
+	C2D_DrawText(&batteryPercentageText, C2D_AlignCenter, 200.0, 215, 0, 0.8, 0.8, 0.5f);
 
 	// Sprite drawing:
+	int batterySpriteIndex;
+	// Load the sprite from it's index. First thing we do is chec
+	if (checkChagringState() == ChargingState::Charging || checkChagringState() == ChargingState::FullyCharged)
+		batterySpriteIndex = 5;
+	else if (getBatteryPercentage() <= 100 && getBatteryPercentage() >= 80)
+		batterySpriteIndex = 4;
+	else if (getBatteryPercentage() < 80 && getBatteryPercentage() >= 60)
+		batterySpriteIndex = 3;
+	else if (getBatteryPercentage() < 60 && getBatteryPercentage() >= 40)
+		batterySpriteIndex = 2;
+	else if (getBatteryPercentage() < 40 && getBatteryPercentage() >= 20)
+		batterySpriteIndex = 1;
+	else
+		batterySpriteIndex = 0;
+	C2D_SpriteFromSheet(&batterySprite, spritesheet, batterySpriteIndex);
+	// Set the size, scale and etc...
+	C2D_SpriteSetScale(&batterySprite, batterySpriteSize, batterySpriteSize);
+	C2D_SpriteSetCenter(&batterySprite, 0.5, 0);
+	C2D_SpriteSetPos(&batterySprite, 200, 25);
+	// Draw the sprite
 	C2D_DrawSprite(&batterySprite);
 }
 
