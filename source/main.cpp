@@ -34,8 +34,6 @@ void sceneInit() {
 	C2D_TextOptimize(&batteryLevelText);
 	// Display the sprites
 	C2D_SpriteFromSheet(&batterySprite, spritesheet, 1);
-	C2D_SpriteSetCenter(&batterySprite, 0.5, 0.5);
-	C2D_SpriteSetScale(&batterySprite, 0.5, 0.5);
 }
 
 void sceneRender() {
