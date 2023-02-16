@@ -19,29 +19,7 @@ void audiospecCallback(void *userdata, Uint8 *stream, int len){
 
 }
 bool pluggedInSoundLoopRunning = true;
-void pluggedInSoundLoop(void*){
-	bool lastIsPluggedIn = isChargerPluggedIn();
-	if (Mix_OpenAudio(22050, AUDIO_S16SYS, 2, 4096) < 0) {
-		std::cout << "Error initializing SDL_Mixer: " << Mix_GetError() << std::endl;
-	}
-	Mix_Chunk *wav = Mix_LoadWAV("romfs:/plugged-in.wav");
-	if (wav == NULL)
-		std::cout << "Error loading plugged in sound: " << Mix_GetError() << std::endl;
-	Mix_VolumeChunk(wav, 128);
-	while (pluggedInSoundLoopRunning) {
-		if (lastIsPluggedIn != isChargerPluggedIn()) {
-			lastIsPluggedIn = isChargerPluggedIn();
-			std::cout << "Charger is now " << (isChargerPluggedIn() ? "Plugged in" : "Not Plugged in") << std::endl;
-			if (isChargerPluggedIn()) {
-				if (Mix_PlayChannel(-1, wav, 1) < 0)
-					std::cout << "Error playing plugged in sound: " << Mix_GetError() << std::endl;
-			}
-		}
-	}
-	delete wav;
-	Mix_CloseAudio();
-}
-
+void pluggedInSoundLoop(void*);
 
 C2D_TextBuf staticBuf, dynamicBuf;
 C2D_Text batteryPercentageText, batteryLevelText;
@@ -169,4 +147,27 @@ int main(int argc, char **argv) {
 	romfsExit();
 	SDL_Quit();
 	return 0;
+}
+
+void pluggedInSoundLoop(void*){
+	bool lastIsPluggedIn = isChargerPluggedIn();
+	if (Mix_OpenAudio(22050, AUDIO_S16SYS, 2, 4096) < 0) {
+		std::cout << "Error initializing SDL_Mixer: " << Mix_GetError() << std::endl;
+	}
+	Mix_Chunk *wav = Mix_LoadWAV("romfs:/plugged-in.wav");
+	if (wav == NULL)
+		std::cout << "Error loading plugged in sound: " << Mix_GetError() << std::endl;
+	Mix_VolumeChunk(wav, 128);
+	while (pluggedInSoundLoopRunning) {
+		if (lastIsPluggedIn != isChargerPluggedIn()) {
+			lastIsPluggedIn = isChargerPluggedIn();
+			std::cout << "Charger is now " << (isChargerPluggedIn() ? "Plugged in" : "Not Plugged in") << std::endl;
+			if (isChargerPluggedIn()) {
+				if (Mix_PlayChannel(-1, wav, 1) < 0)
+					std::cout << "Error playing plugged in sound: " << Mix_GetError() << std::endl;
+			}
+		}
+	}
+	delete wav;
+	Mix_CloseAudio();
 }
