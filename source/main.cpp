@@ -13,13 +13,6 @@ const u32 C_Yellow = C2D_Color32(0xFF, 0xFF, 0x00, 0xFF);
 const u32 C_Orange = C2D_Color32(0xFF, 0xA5, 0x00, 0xFF);
 const u32 C_Red = C2D_Color32(0xFF, 0x00, 0x00, 0xFF);
 
-bool statusPrintingLoop = true;
-void statusPrinintLoopTh(void*) {
-	std::cout << "Battery: " << (int)getBatteryPercentage() << "%" << std::endl;
-	std::cout << "Charging state: " << chargingStateToString(checkChagringState()) << std::endl;
-	std::cout << "Charger plugged in: " << (isChargerPluggedIn() ? "Yes" : "No") << std::endl;
-}
-
 C2D_TextBuf staticBuf, dynamicBuf;
 C2D_Text batteryPercentageText, batteryLevelText;
 C2D_SpriteSheet spritesheet;
@@ -129,7 +122,6 @@ int main(int argc, char **argv) {
 	C2D_SpriteSheetFree(spritesheet);
 
 	sceneExit();
-	statusPrintingLoop = false;
 	C3D_Fini();
 	C2D_Fini();
 	ptmuExit();
