@@ -27,7 +27,7 @@ void pluggedInSoundLoop(void*){
 	Mix_Chunk *wav = Mix_LoadWAV("romfs:/plugged-in.wav");
 	if (wav == NULL)
 		std::cout << "Error loading plugged in sound: " << Mix_GetError() << std::endl;
-
+	Mix_VolumeChunk(wav, 128);
 	while (pluggedInSoundLoopRunning) {
 		if (lastIsPluggedIn != isChargerPluggedIn()) {
 			lastIsPluggedIn = isChargerPluggedIn();
@@ -38,6 +38,7 @@ void pluggedInSoundLoop(void*){
 			}
 		}
 	}
+	delete wav;
 	Mix_CloseAudio();
 }
 
