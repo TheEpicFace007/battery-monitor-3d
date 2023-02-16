@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
 
 void pluggedInSoundLoop(void*){
 	bool lastIsPluggedIn = isChargerPluggedIn();
-	if (Mix_OpenAudio(22050, AUDIO_S16SYS, 2, 4096) < 0) {
+	if (Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 4096) < 0) {
 		std::cout << "Error initializing SDL_Mixer: " << Mix_GetError() << std::endl;
 	}
 	Mix_Chunk *wav = Mix_LoadWAV("romfs:/plugged-in.wav");
