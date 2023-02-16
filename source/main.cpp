@@ -7,6 +7,7 @@
 #include <vector>
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
+#include "ctr-led-brary.hpp"
 
 const u32 C_NeonGreen = C2D_Color32(0x00, 0xFF, 0x00, 0xFF);
 const u32 C_Green = C2D_Color32(0x00, 0x80, 0x00, 0xFF);
@@ -15,11 +16,10 @@ const u32 C_Yellow = C2D_Color32(0xFF, 0xFF, 0x00, 0xFF);
 const u32 C_Orange = C2D_Color32(0xFF, 0xA5, 0x00, 0xFF);
 const u32 C_Red = C2D_Color32(0xFF, 0x00, 0x00, 0xFF);
 
-void audiospecCallback(void *userdata, Uint8 *stream, int len){
-
-}
 bool pluggedInSoundLoopRunning = true;
 void pluggedInSoundLoop(void*);
+bool ledIndicatorLoopRunning = true;
+void ledIndicatorLoop(void*);
 
 C2D_TextBuf staticBuf, dynamicBuf;
 C2D_Text batteryPercentageText, batteryLevelText;
@@ -92,10 +92,14 @@ int main(int argc, char **argv) {
 	// Create screens
 	C3D_RenderTarget* top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
 	consoleInit(GFX_BOTTOM, NULL);
+	// Initialize and run threads
 	s32 mainThreadPriority;
 	svcGetThreadPriority(&mainThreadPriority, CUR_THREAD_HANDLE);
-	Thread pluggedInSoundLoopThread = threadCreate(pluggedInSoundLoop, nullptr, 2048, mainThreadPriority-1,
+	Thread pluggedInSoundLoopThread = threadCreate(pluggedInSoundLoop, nullptr, 2048 * 4, mainThreadPriority-1,
 													-1, true);
+	std::cout << "Main thread prio: " << (int)mainThreadPriority << std::endl;
+	Thread ledIndicatorThread = threadCreate(ledIndicatorLoop, nullptr, 1024, mainThreadPriority-2, -1, true);
+
 	
 	// Initialize sprites
 	spritesheet = C2D_SpriteSheetLoad("romfs:/battery-sprites.t3x");
@@ -136,6 +140,9 @@ int main(int argc, char **argv) {
 	pluggedInSoundLoopRunning = false;
 	threadJoin(pluggedInSoundLoopThread, U64_MAX);
 	threadFree(pluggedInSoundLoopThread);
+	ledIndicatorLoopRunning = false;
+	threadJoin(ledIndicatorThread, U64_MAX);
+	threadFree(ledIndicatorThread);
 	// Deinit libs
 	sceneExit();
 	C3D_Fini();
@@ -170,4 +177,12 @@ void pluggedInSoundLoop(void*){
 	}
 	delete wav;
 	Mix_CloseAudio();
+}
+
+
+void ledIndicatorLoop(void*) {
+
+	while (ledIndicatorLoopRunning){
+		u8 batteryPercentage = getBatteryPercentage();
+	}
 }
