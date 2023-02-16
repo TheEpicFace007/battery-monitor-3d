@@ -169,7 +169,7 @@ void pluggedInSoundLoop(void*){
 			lastIsPluggedIn = isChargerPluggedIn();
 			std::cout << "Charger is now " << (isChargerPluggedIn() ? "Plugged in" : "Not Plugged in") << std::endl;
 			if (isChargerPluggedIn()) {
-				if (Mix_PlayChannel(-1, wav, 1) < 0)
+				if (Mix_PlayChannel(-1, wav, 0) < 0)
 					std::cout << "Error playing plugged in sound: " << Mix_GetError() << std::endl;
 			}
 		}
