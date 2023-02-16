@@ -97,7 +97,6 @@ int main(int argc, char **argv) {
 	svcGetThreadPriority(&mainThreadPriority, CUR_THREAD_HANDLE);
 	Thread pluggedInSoundLoopThread = threadCreate(pluggedInSoundLoop, nullptr, 2048 * 4, mainThreadPriority-1,
 													-1, true);
-	std::cout << "Main thread prio: " << (int)mainThreadPriority << std::endl;
 	Thread ledIndicatorThread = threadCreate(ledIndicatorLoop, nullptr, 1024, mainThreadPriority-2, -1, true);
 
 	
