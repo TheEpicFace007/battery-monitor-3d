@@ -5,6 +5,8 @@
 #include <citro2d.h>
 #include <citro3d.h>
 #include <vector>
+#include <SDL/SDL.h>
+#include <SDL/SDL_mixer.h>
 
 const u32 C_NeonGreen = C2D_Color32(0x00, 0xFF, 0x00, 0xFF);
 const u32 C_Green = C2D_Color32(0x00, 0x80, 0x00, 0xFF);
@@ -13,12 +15,38 @@ const u32 C_Yellow = C2D_Color32(0xFF, 0xFF, 0x00, 0xFF);
 const u32 C_Orange = C2D_Color32(0xFF, 0xA5, 0x00, 0xFF);
 const u32 C_Red = C2D_Color32(0xFF, 0x00, 0x00, 0xFF);
 
+void audiospecCallback(void *userdata, Uint8 *stream, int len){
+
+}
+bool pluggedInSoundLoopRunning = true;
+void pluggedInSoundLoop(void*){
+	bool lastIsPluggedIn = isChargerPluggedIn();
+	if (Mix_OpenAudio(22050, AUDIO_S16SYS, 2, 4096) < 0) {
+		std::cout << "Error initializing SDL_Mixer: " << Mix_GetError() << std::endl;
+	}
+	Mix_Chunk *wav = Mix_LoadWAV("romfs:/plugged-in.wav");
+	if (wav == NULL)
+		std::cout << "Error loading plugged in sound: " << Mix_GetError() << std::endl;
+
+	while (pluggedInSoundLoopRunning) {
+		if (lastIsPluggedIn != isChargerPluggedIn()) {
+			lastIsPluggedIn = isChargerPluggedIn();
+			std::cout << "Charger is now " << (isChargerPluggedIn() ? "Plugged in" : "Not Plugged in") << std::endl;
+			if (isChargerPluggedIn()) {
+				if (Mix_PlayChannel(-1, wav, 1) < 0)
+					std::cout << "Error playing plugged in sound: " << Mix_GetError() << std::endl;
+			}
+		}
+	}
+	Mix_CloseAudio();
+}
+
+
 C2D_TextBuf staticBuf, dynamicBuf;
 C2D_Text batteryPercentageText, batteryLevelText;
 C2D_SpriteSheet spritesheet;
 C2D_Sprite batterySprite;
 constexpr float batterySpriteSize = 0.73;
-
 void sceneInit() {
 	staticBuf = C2D_TextBufNew(4096);
 	dynamicBuf = C2D_TextBufNew(4096);
@@ -79,11 +107,17 @@ int main(int argc, char **argv) {
 	C2D_Prepare();
 	romfsInit();
 	newsInit();
+	if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+		std::cout << "Error initializing SDL: " << SDL_GetError() << std::endl;
+	}
 	// Create screens
 	C3D_RenderTarget* top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
 	consoleInit(GFX_BOTTOM, NULL);
-	// C3D_RenderTarget* bottom = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
-
+	s32 mainThreadPriority;
+	svcGetThreadPriority(&mainThreadPriority, CUR_THREAD_HANDLE);
+	Thread pluggedInSoundLoopThread = threadCreate(pluggedInSoundLoop, nullptr, 2048, mainThreadPriority-1,
+													-1, true);
+	
 	// Initialize sprites
 	spritesheet = C2D_SpriteSheetLoad("romfs:/battery-sprites.t3x");
 	if (!spritesheet)
@@ -95,7 +129,6 @@ int main(int argc, char **argv) {
 		hidScanInput();
 
 		u32 kDown = hidKeysDown();
-		u32 kHeld = hidKeysHeld();
 		if (kDown & KEY_START)
 			break;
 
@@ -119,8 +152,12 @@ int main(int argc, char **argv) {
 		sceneRender();
 		C3D_FrameEnd(0);
 	}
+	// Free things
 	C2D_SpriteSheetFree(spritesheet);
-
+	pluggedInSoundLoopRunning = false;
+	threadJoin(pluggedInSoundLoopThread, U64_MAX);
+	threadFree(pluggedInSoundLoopThread);
+	// Deinit libs
 	sceneExit();
 	C3D_Fini();
 	C2D_Fini();
@@ -129,5 +166,6 @@ int main(int argc, char **argv) {
 	newsExit();
 	gfxExit();
 	romfsExit();
+	SDL_Quit();
 	return 0;
 }
