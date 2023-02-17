@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
 	// Initialize and run threads
 	s32 mainThreadPriority;
 	svcGetThreadPriority(&mainThreadPriority, CUR_THREAD_HANDLE);
-	Thread pluggedInSoundLoopThread = threadCreate(pluggedInSoundLoop, nullptr, 2048 * 4, mainThreadPriority-1,
+	Thread pluggedInSoundLoopThread = threadCreate(pluggedInSoundLoop, nullptr, 2048, mainThreadPriority-1,
 													-1, true);
 	Thread ledIndicatorThread = threadCreate(ledIndicatorLoop, nullptr, 1024, mainThreadPriority-2, -1, true);
 
@@ -157,7 +157,7 @@ int main(int argc, char **argv) {
 
 void pluggedInSoundLoop(void*){
 	bool lastIsPluggedIn = isChargerPluggedIn();
-	if (Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 4096) < 0) {
+	if (Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 1024) < 0) {
 		std::cout << "Error initializing SDL_Mixer: " << Mix_GetError() << std::endl;
 	}
 	Mix_Chunk *wav = Mix_LoadWAV("romfs:/plugged-in.wav");
